@@ -1,0 +1,12 @@
+FROM frappe/erpnext:v15.0.0
+
+USER root
+RUN mkdir -p /home/frappe/frappe-bench/techxle
+COPY frappe/utils/setup_*.py /home/frappe/frappe-bench/techxle/
+COPY frappe/utils/cleanup_*.py /home/frappe/frappe-bench/techxle/
+COPY frappe/utils/set_print_defaults.py /home/frappe/frappe-bench/techxle/
+RUN chown -R frappe:frappe /home/frappe/frappe-bench/techxle
+USER frappe
+
+# Embedded Start Command for Web
+CMD ["/bin/bash", "-c", "/home/frappe/frappe-bench/env/bin/gunicorn -b 0.0.0.0:$PORT -w 2 -t 120 frappe.app:application"]

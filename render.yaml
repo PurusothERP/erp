@@ -24,10 +24,11 @@ services:
     env: docker
     dockerfilePath: ./Dockerfile.redis
 
-  # 3. ERPNext Web Server (The Main App)
+  # 3. ERPNext Web Server (Uses Dockerfile.web)
   - type: web
     name: techxle-erpnext-web
     env: docker
+    dockerfilePath: ./Dockerfile.web
     envVars:
       - key: DB_HOST
         fromService:
@@ -51,13 +52,12 @@ services:
           type: pserv
           name: techxle-redis
           property: host
-    buildCommand: docker build -t techxle-erpnext -f Dockerfile .
-    startCommand: /home/frappe/frappe-bench/env/bin/gunicorn -b 0.0.0.0:$PORT -w 2 -t 120 frappe.app:application
 
-  # 4. ERPNext Worker (Background Jobs)
+  # 4. ERPNext Worker (Uses Dockerfile.worker)
   - type: worker
     name: techxle-erpnext-worker
     env: docker
+    dockerfilePath: ./Dockerfile.worker
     envVars:
       - key: DB_HOST
         fromService:
@@ -69,5 +69,3 @@ services:
           type: pserv
           name: techxle-redis
           property: host
-    buildCommand: docker build -t techxle-erpnext -f Dockerfile .
-    startCommand: bench worker --queue default,short,long

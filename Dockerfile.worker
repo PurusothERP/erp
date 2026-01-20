@@ -1,0 +1,12 @@
+FROM frappe/erpnext:v15.0.0
+
+USER root
+RUN mkdir -p /home/frappe/frappe-bench/techxle
+COPY frappe/utils/setup_*.py /home/frappe/frappe-bench/techxle/
+COPY frappe/utils/cleanup_*.py /home/frappe/frappe-bench/techxle/
+COPY frappe/utils/set_print_defaults.py /home/frappe/frappe-bench/techxle/
+RUN chown -R frappe:frappe /home/frappe/frappe-bench/techxle
+USER frappe
+
+# Embedded Start Command for Worker
+CMD ["bench", "worker", "--queue", "default,short,long"]
