@@ -1,0 +1,74 @@
+services:
+  # 1. MariaDB Database (Private Service)
+  - type: pserv
+    name: techxle-mariadb
+    env: docker
+    image: mariadb:10.6
+    disk:
+      name: mariadb-data
+      mountPath: /var/lib/mysql
+      sizeGB: 10
+    envVars:
+      - key: MYSQL_ROOT_PASSWORD
+        generateValue: true
+      - key: MYSQL_DATABASE
+        value: _4ca7d9349615024e
+      - key: MYSQL_USER
+        value: _4ca7d9349615024e
+      - key: MYSQL_PASSWORD
+        generateValue: true
+
+  # 2. Redis Cache & Queue (Using simple Docker Redis for cost efficiency)
+  - type: pserv
+    name: techxle-redis
+    env: docker
+    image: redis:6.2-alpine
+
+  # 3. ERPNext Web Server (The Main App)
+  - type: web
+    name: techxle-erpnext-web
+    env: docker
+    plan: standard # Requires sufficient RAM
+    envVars:
+      - key: DB_HOST
+        fromService:
+          type: pserv
+          name: techxle-mariadb
+          property: host
+      - key: DB_PORT
+        value: 3306
+      - key: REDIS_CACHE
+        fromService:
+          type: pserv
+          name: techxle-redis
+          property: host
+      - key: REDIS_QUEUE
+        fromService:
+          type: pserv
+          name: techxle-redis
+          property: host
+      - key: REDIS_SOCKETIO
+        fromService:
+          type: pserv
+          name: techxle-redis
+          property: host
+    buildCommand: docker build -t techxle-erpnext .
+    startCommand: /home/frappe/frappe-bench/env/bin/gunicorn -b 0.0.0.0:$PORT -w 2 -t 120 frappe.app:application
+
+  # 4. ERPNext Worker (Background Jobs)
+  - type: worker
+    name: techxle-erpnext-worker
+    env: docker
+    envVars:
+      - key: DB_HOST
+        fromService:
+          type: pserv
+          name: techxle-mariadb
+          property: host
+      - key: REDIS_CACHE
+        fromService:
+          type: pserv
+          name: techxle-redis
+          property: host
+    buildCommand: docker build -t techxle-erpnext .
+    startCommand: bench worker --queue default,short,long
