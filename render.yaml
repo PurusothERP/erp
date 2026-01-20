@@ -12,9 +12,9 @@ services:
       - key: MYSQL_ROOT_PASSWORD
         generateValue: true
       - key: MYSQL_DATABASE
-        value: _4ca7d9349615024e
+        value: "_4ca7d9349615024e"
       - key: MYSQL_USER
-        value: _4ca7d9349615024e
+        value: "_4ca7d9349615024e"
       - key: MYSQL_PASSWORD
         generateValue: true
 
@@ -28,7 +28,6 @@ services:
   - type: web
     name: techxle-erpnext-web
     env: docker
-    plan: standard 
     envVars:
       - key: DB_HOST
         fromService:
@@ -36,7 +35,7 @@ services:
           name: techxle-mariadb
           property: host
       - key: DB_PORT
-        value: 3306
+        value: "3306"
       - key: REDIS_CACHE
         fromService:
           type: pserv
