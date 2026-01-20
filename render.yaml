@@ -2,7 +2,7 @@ services:
   # 1. MariaDB Database (Private Service)
   - type: pserv
     name: techxle-mariadb
-    env: docker
+    env: image
     image: mariadb:10.6
     disk:
       name: mariadb-data
@@ -18,17 +18,17 @@ services:
       - key: MYSQL_PASSWORD
         generateValue: true
 
-  # 2. Redis Cache & Queue (Using simple Docker Redis for cost efficiency)
+  # 2. Redis Cache & Queue
   - type: pserv
     name: techxle-redis
-    env: docker
+    env: image
     image: redis:6.2-alpine
 
-  # 3. ERPNext Web Server (The Main App)
+  # 3. ERPNext Web Server (Builds from Dockerfile)
   - type: web
     name: techxle-erpnext-web
     env: docker
-    plan: standard # Requires sufficient RAM
+    plan: standard 
     envVars:
       - key: DB_HOST
         fromService:
@@ -55,7 +55,7 @@ services:
     buildCommand: docker build -t techxle-erpnext .
     startCommand: /home/frappe/frappe-bench/env/bin/gunicorn -b 0.0.0.0:$PORT -w 2 -t 120 frappe.app:application
 
-  # 4. ERPNext Worker (Background Jobs)
+  # 4. ERPNext Worker (Builds from Dockerfile)
   - type: worker
     name: techxle-erpnext-worker
     env: docker
